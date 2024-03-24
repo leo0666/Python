@@ -1,4 +1,4 @@
-from cat_informatique import gen_pwd_hash, level_pwd_security, password_manager, bruteforce, file_encrypt_decrypt, réseau
+from cat_informatique import gen_pwd_hash, level_pwd_security, password_manager, file_encrypt_decrypt, réseau
 from cat_math import calcul, convert, temps_distance_vitesse, random_num
 from cat_physic import period_freq
 
@@ -6,25 +6,7 @@ while True:
     cat = input(
         "\n Choisesez une catégorie :\n 1.Informatique   2.Math   3.Physique \n 4.Autre          5.Fermer \n")
 
-    if cat == '666':
-
-        while True:
-            fonct = input(
-                "\n Choisesez une fonction :\n 1.Bruteforce   2.Retour   3.Fermer \n")
-
-            if fonct == '1':
-                bruteforce()
-
-            elif fonct == '2':
-                break
-
-            elif fonct == '3':
-                exit()
-
-            else:
-                print("Erreur, entrez un numéro valide !!!")
-
-    elif cat == '1':
+    if cat == '1':
 
         while True:
             fonct = input(

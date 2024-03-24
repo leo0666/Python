@@ -73,53 +73,6 @@ def level_pwd_security():
     print(password_strength(input("Entre ton mot de passe : ")))
 
 
-def bruteforce():
-    # Génère des mots de passe et les compare au mot de passe donné
-    def bruteforce_program(password):
-        chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation
-        attempts = 0
-        for password_length in range(1, len(password) + 1):
-            for guess in itertools.product(chars, repeat=password_length):
-                attempts += 1
-                guess = ''.join(guess)
-                print(guess, " : ", attempts)
-                if guess == password:
-                    return guess, attempts
-
-    # Hashe le mot de passe correspondant à celui qui doit être trouvé
-    def hash_password(password):
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        return hashed_password
-
-    # Demande le mot de passe qui doit être trouvé
-    password = input("Entrez le mot de passe à deviner : ")
-
-    while True:
-        hash_choice = input("Voulez-vous le hash du MDP (y/n) : ")
-        if hash_choice in ['y', 'n']:
-            break
-        else:
-            print("Erreur, utilisez 'y' ou 'n' !!!")
-
-    # Mesure le temps d'exécution du bruteforce
-    start_time = time.time()
-    guess, attempts = bruteforce_program(password)
-    end_time = time.time()
-
-    # Affiche le mot de passe et son hash
-    if hash_choice == 'y':
-        hashed_password = hash_password(guess)
-        print(f"Mot de passe : {guess} - Hash (sha256) : {hashed_password}")
-        print(f"Nombre d'essais : {attempts}")
-        print(f"Temps : {end_time - start_time} s")
-
-    # Affiche le mot de passe
-    else:
-        print(f"Mot de passe : {guess}")
-        print(f"Nombre d'essais : {attempts}")
-        print(f"Temps : {end_time - start_time} s")
-
-
 def password_manager():
     # Fonction pour stocker le mot de passe dans un fichier
     def save_password(username, platform, password):
