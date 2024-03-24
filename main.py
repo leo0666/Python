@@ -17,10 +17,10 @@ app = Flask('Cagnotte')
 
 # Connexion à la base de données
 db_config = {
-    'host': '192.168.1.2',
-    'user': 'leolepinette_ip',
-    'password': 'LEO240305!',
-    'database': 'bdd_cagnotte'
+    'host': 'IP for your mysql server',
+    'user': 'Your_user_name',
+    'password': 'Your_password',
+    'database': 'name_bdd'
 }
 
 conn = mysql.connector.connect(**db_config)
