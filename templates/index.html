@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <link rel="stylesheet" href="../static/styles.css">
+</head>
+<body>
+    <h1>Cagnotte</h1>
+
+    <?php
+        // Connexion à la base de données
+        $db_host = '192.168.1.2';
+        $db_user = 'leolepinette_ip';
+        $db_password = 'LEO240305!';
+        $db_name = 'BDD_cagnotte';
+
+        $conn = new mysqli($db_host, $db_user, $db_password, $db_name);
+
+        // Vérifier la connexion
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
+
+        // Charger les participants depuis la base de données
+        $participants_query = "SELECT * FROM participants";
+        $participants_result = $conn->query($participants_query);
+        $participants = [];
+
+        if ($participants_result->num_rows > 0) {
+            while ($row = $participants_result->fetch_assoc()) {
+                $participants[] = $row;
+            }
+        }
+
+        // Charger les mots interdits depuis la base de données
+        $mots_interdit_query = "SELECT * FROM mots_interdit";
+        $mots_interdit_result = $conn->query($mots_interdit_query);
+        $mots_interdit = [];
+
+        if ($mots_interdit_result->num_rows > 0) {
+            while ($row = $mots_interdit_result->fetch_assoc()) {
+                $mots_interdit[] = $row;
+            }
+        }
+
+        // Page d'accueil
+        if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action']) && $_GET['action'] == 'index') {
+            $participants_query = "SELECT * FROM participants";
+            $participants_result = $conn->query($participants_query);
+            $participants = [];
+
+            if ($participants_result->num_rows > 0) {
+                while ($row = $participants_result->fetch_assoc()) {
+                    $participants[] = $row;
+                }
+            }
+
+            $mots_interdit_query = "SELECT * FROM mots_interdit";
+            $mots_interdit_result = $conn->query($mots_interdit_query);
+            $mots_interdit = [];
+
+            if ($mots_interdit_result->num_rows > 0) {
+                while ($row = $mots_interdit_result->fetch_assoc()) {
+                    $mots_interdit[] = $row;
+                }
+            }
+
+            include 'index.php';
+        }
+
+        // Ajouter un participant
+        if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'ajouter_p') {
+            $prenom = $_POST['prenom'];
+            $nom = $_POST['nom'];
+            $email = $_POST['email'];
+
+            $insert_query = "INSERT INTO participants (prenom, nom, email, argents) VALUES ('$prenom', '$nom', '$email', 0)";
+            $conn->query($insert_query);
+
+            // Envoyer un e-mail
+            // Votre code pour envoyer un e-mail ici
+
+            header('Content-Type: application/json');
+            echo json_encode(['message' => 'Participant ajouté avec succès. Un e-mail de bienvenue a été envoyé.', 'type' => 'success']);
+        }
+
+        // Supprimer un participant
+        if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'supprimer_p') {
+            $id_participant = $_POST['id_participant'];
+
+            $delete_query = "DELETE FROM participants WHERE id = $id_participant";
+            $conn->query($delete_query);
+
+            header('Content-Type: application/json');
+            echo json_encode(['message' => 'Participant supprimé avec succès.', 'type' => 'success']);
+        }
+
+        // Autres actions à ajouter/modifier/supprimer des mots interdits, etc.
+
+        // Inclure le fichier HTML avec les données dynamiques
+        include 'index.html';
+    ?>
+
+    <button id="menuButton" onclick="openModal_cp()">Afficher le menu</button>
+    <div id="menu" style="display: none;">
+        <ul>
+            <li><a href="#" onclick="openModal_ap()">Ajouter Participant</a></li>
+            <li><a href="#" onclick="openModal_sp()">Supprimer Participant</a></li>
+            <li><a href="#" onclick="openModal_ma()">Modifier l'argents</a></li>
+            <li><a href="#" onclick="openModal_am()">Ajouter un mot</a></li>
+            <li><a href="#" onclick="openModal_sm()">Supprimer un mot</a></li>
+        </ul>
+    </div>
+
+    <div id="ajoutModal_cp" class="modal">
+        <div class="modal-content">
+            <h2>Accès au menu</h2>
+            <form id="ajoutForm_cp">
+                <label style = "color: black;" for="utilisateur">Utilisateur: </label>
+                <input type="text" name="utilisateur" required>
+                <label style = "color: black;" for="mdp">Mot de passe: </label>
+                <input type="password" name="mdp" required>
+                <button type="button" onclick="authentifierUtilisateur()">Connexion</button>
+                <button type="button" onclick="closeModal_cp()">Annuler</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="ajoutModal_ap" class="modal">
+        <div class="modal-content">
+            <h2>Ajouter un participant</h2>
+            <form id="ajoutForm_ap">
+                <label style = "color: black;" for="prenom">Prénom: </label>
+                <input type="text" name="prenom" required>
+                <label style = "color: black;" for="nom">Nom: </label>
+                <input type="text" name="nom" required>
+                <label style = "color: black;" for="email">Mail: </label>
+                <input type="email" name="email" required>
+                <button type="button" onclick="ajouterParticipant()">Ajouter</button>
+                <button type="button" onclick="closeModal_ap()">Annuler</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="ajoutModal_sp" class="modal">
+        <div class="modal-content">
+            <h2>Supprimer un participant</h2>
+            <form id="ajoutForm_sp">
+                <label style = "color: black;" for="participant">Participant à supprimer: </label>
+                <select name="participant" required>
+                    {% for participant in participants %}
+                        <option value="{{ participant['id'] }}">{{ participant['prenom'] }} {{ participant['nom'] }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" onclick="supprimerParticipant()">Supprimer</button>
+                <button type="button" onclick="closeModal_sp()">Annuler</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="ajoutModal_ma" class="modal">
+        <div class="modal-content">
+            <h2>Modifier l'argents</h2>
+            <form id="ajoutForm_ma">
+                <label style = "color: black;" for="participants">Participant à modifier: </label>
+                <select name="participants" required>
+                    {% for participant in participants %}
+                        <option value="{{ participant['id'] }}">{{ participant['prenom'] }} {{ participant['nom'] }}</option>
+                    {% endfor %}
+                </select>
+                <label style = "color: black;" for="nouvelleValeur">Nouvelle valeur: </label>
+                <input type="number" name="nouvelleValeur" required>
+                <button type="button" onclick="modifierValeur()">Modifier</button>
+                <button type="button" onclick="closeModal_ma()">Annuler</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="ajoutModal_am" class="modal">
+        <div class="modal-content">
+            <h2>Ajouter un Mot</h2>
+            <form id="ajoutForm_am">
+                <label style = "color: black;" for="mot">Mot: </label>
+                <input type="text" name="mot" required>
+                <label style = "color: black;" for="prix">prix: </label>
+                <input type="number" name="prix" required>
+                <button type="button" onclick="ajouterMot()">Ajouter</button>
+                <button type="button" onclick="closeModal_am()">Annuler</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="ajoutModal_sm" class="modal">
+        <div class="modal-content">
+            <h2>Supprimer un mot</h2>
+            <form id="ajoutForm_sm">
+                <label style = "color: black;" for="mot">Mot à supprimer: </label>
+                <select name="mot" required>
+                    {% for mot in mots_interdit %}
+                        <option value="{{ mot['id'] }}">{{ mot['mot'] }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" onclick="supprimerMot()">Supprimer</button>
+                <button type="button" onclick="closeModal_sm()">Annuler</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container">
+        <div style="text-align: center; margin: 0 auto;">
+            <table class="tb_participant" border="1">
+                <tr>
+                    <th>Prénom</th>
+                    <th>Nom</th>
+                    <th>€</th>
+                </tr>
+                {% for participant in participants %}
+                <tr>
+                    <td>{{ participant['prenom'] }}</td>
+                    <td>{{ participant['nom'] }}</td>
+                    <td>{{ participant['argents'] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <h3>Dites un de ces mots et vous verrez votre dette augmenter !</h3>
+        <div style="text-align: center; margin: 0 auto;">
+            <table class='tb_mot' border="1">
+                <tr>
+                    <th>Mot</th>
+                    <th>€</th>
+                </tr>
+                {% for mot in mots_interdit %}
+                <tr>
+                    <td>{{ mot['mot'] }}</td>
+                    <td>{{ mot['prix'] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</body>
+</html>
